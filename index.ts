@@ -38,6 +38,20 @@ async function getModuleItems(courseId: string, moduleId: string) {
     return response.data;
 }
 
+/**
+ * Currently I get 403 with my not so powerful Access token :(
+ * @param courseId
+ * @param moduleId
+ */
+async function getCourseFiles(courseId: string, moduleId: string) {
+    const response = await axios.get(`${canvasBaseUrl}/courses/${courseId}/files/${moduleId}`, {
+        headers: {
+            'Authorization': `Bearer ${canvasApiToken}`
+        }
+    });
+    return response.data
+}
+
 async function downloadPDF(url: string, fileName: string, courseId: string): Promise<void> {
     try {
         if(!courseId){
@@ -59,7 +73,7 @@ async function downloadPDF(url: string, fileName: string, courseId: string): Pro
         fs.writeFileSync(filePath, response.data);
         console.log(`File saved: ${filePath}`);
     } catch (error) {
-        console.error('Error downloading PDF:', error);
+        console.log(`Error downloading PDF: ${fileName}`, error);
     }
 }
 
@@ -82,21 +96,27 @@ async function savePdfFiles(courseId: string, courseDescr: string) {
     const modules = await getModules(courseId);
     const externalUrls: { url: string, title: string }[] = [];
 
+
+
+
     for (const module of modules) {
         const moduleItems = await getModuleItems(courseId, module.id);
-        for (const item of moduleItems) {
 
+        let index = 0;
+
+        for (const item of moduleItems) {
             if (item.type === 'File' ) {
-                getSlidesUrl(item).then((response) => {
-                   if(response != null){
-                       downloadPDF(response.url, item.title + '.'+ response.mime_class, courseDescr).catch(() => {
-                            console.error('Error downloading PDF');
-                       });
-                   }
-                });
+                const response = await getSlidesUrl(item)
+
+                if(response != null){
+                   downloadPDF(response.url, item.title? item.title : index.toString() + '.'+ response.mime_class ?response.mime_class : 'pdf' , courseDescr).catch(() => {
+                        console.error('Error downloading PDF');
+                   });
+               }
             }else if(item.type === 'ExternalUrl'){
                 externalUrls.push({url: item.external_url, title: item.title});
             }
+            index +=1;
         }
     }
     return externalUrls;

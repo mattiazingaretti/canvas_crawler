@@ -41,3 +41,6 @@ Canvas Crawler will:
 - Fetch course modules from Canvas from the info provided in the `coursesMapping.json` file.
 - Download PDF files and save them in corresponding downloads sub folder.
 - Collect external URLs and save them in a single CSV file.
+
+## Known Issues
+Currently I do not have privileges to download module files so some files may not be downloaded. I am working on a solution to this issue.
