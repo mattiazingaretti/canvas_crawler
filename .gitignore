@@ -13,3 +13,5 @@
 # WebStorm project files
 /.idea/
 .env
+downloads
+coursesMapping.json
